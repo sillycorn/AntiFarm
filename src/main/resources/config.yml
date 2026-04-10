@@ -144,12 +144,10 @@ prevent-mob-farms:
    # Percentage of damage the player must inflict for the mob to loot.
    required-damage-percent-for-loot: 70
    # All afk mob farms are blocked by default.
-   # If you only want to block only one creature's farm. Set 'blacklist' to 'true' and add the name of the creature you want to block to the 'moblist'.
-   # If you only want to allow only one creature's farm. Set 'blacklist' to 'false' and add the name of the creature you want to block to the 'moblist'.
    # If you want all afk creature farms to be blocked don't touch the default settings.
    blacklist: false
-   # blacklist: true -> 'moblist' is blacklist.
-   # blacklist: false -> 'moblist' is whitelist.
+   # true = blocks only the mobs listed
+   # false = allows only the mobs listed
    # When adding mobs to the list, all letters should be capitalized. (Case sensitive list.)
    moblist:
    - BAT

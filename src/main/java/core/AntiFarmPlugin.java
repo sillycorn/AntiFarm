@@ -27,6 +27,7 @@ public class AntiFarmPlugin extends JavaPlugin implements Listener {
     private AntiVillagerTarget antiVillagerTarget;
     private AntiVillagerTrade antiVillagerTrade;
     private AntiVillageGuard antiVillageGuard;
+    private AntiMobFarm antiMobFarm;
 
     @Override
     public void onEnable() {
@@ -46,9 +47,10 @@ public class AntiFarmPlugin extends JavaPlugin implements Listener {
         antiVillagerTarget = new AntiVillagerTarget(this);
         antiVillagerTrade = new AntiVillagerTrade(this);
         antiVillagerTransform = new AntiVillagerTransform(this);
+        antiMobFarm = new AntiMobFarm(this);
 
         registerEvents(this, new AntiPistonFarm(this), antiVillagerFarm, new AntiWaterFarm(this), antiCactusFarm,
-                new AntiEndermanFarm(this), antiVillagerBreed, new AntiMobFarm(this),
+                new AntiEndermanFarm(this), antiVillagerBreed, antiMobFarm,
                 antiDispenser, antiFishFarm, new AntiMobSpawner(this),
                 antiVillagerTransform, antiVillagerTarget, antiVillageGuard, antiSnowballFarm,
                 new AntiRaidFarm(this), new AntiBerryFarm(this), antiGrowth,
@@ -95,6 +97,7 @@ public class AntiFarmPlugin extends JavaPlugin implements Listener {
         antiVillagerTrade.reloadConf();
         antiVillagerTransform.reloadConf();
         antiVillageGuard.reloadConf();
+        antiMobFarm.reloadConf();
         if (antiArmadilloFarm != null) {
             antiArmadilloFarm.reloadConf();
         }

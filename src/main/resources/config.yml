@@ -4,10 +4,6 @@
 settings:
    # Prefix to be used in messages to players.
    prefix: "&a[AntiFarmReloaded]&r "
-   # Send plugin stats to bstats.
-   bstats: true
-   # Check for plugin updates.
-   update-check: true
    # Break detected pistons for auto farm. ('true' option is recommended for performance.)
    break-pistons: true
    # Break detected blocks for auto farm. ('true' option is recommended for performance.)
@@ -57,6 +53,8 @@ villager-settings:
    prevent-villagers-profession-change: true
    # Prevents villagers from harvesting and planting fields.
    prevent-villagers-harvesting-farms: true
+   # stops the villagers from jumping on crops to break them
+   prevent-villagers-trampling-farmland: false
    # Prevent villagers from breeding.
    prevent-villagers-breed: true
    # Prevents villagers from getting infected. (This blocks the way to get discounts from villagers on your server.)
@@ -101,8 +99,6 @@ farms-settings:
    prevent-snowball-farms: true
    # Prevents foxes from dropping sweet berries to the ground.
    prevent-berry-farms: true
-   # Prevents 'farmland-blocks' with 'farm-blocks' from being moved by pistons.
-   prevent-zerotick-farms: true
    # Prevents infinity lava with dripstone.
    prevent-infinity-lava: true
 

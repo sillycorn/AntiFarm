@@ -1,33 +1,51 @@
 package antifarm;
 
+import configuration.Configuration;
+import core.AntiFarmPlugin;
+import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 
-import configuration.Configuration;
-import core.AntiFarmPlugin;
+import java.util.HashSet;
+import java.util.Set;
 
 public class AntiVillagerFarm implements Listener {
+    private final AntiFarmPlugin plugin;
+    private Set<String> disabledWorlds;
+    private boolean preventHarvesting;
+    private boolean preventTrampling;
 
-	private final Configuration config;
+    public AntiVillagerFarm(AntiFarmPlugin plugin) {
+        this.plugin = plugin;
+        reloadConf();
+    }
 
-	public AntiVillagerFarm(AntiFarmPlugin plugin) {
-		this.config = plugin.getConfig();
-	}
+    public void reloadConf() {
+        Configuration config = plugin.getConfig();
+        this.disabledWorlds = new HashSet<>(config.getStringList("settings.disabled-worlds"));
+        this.preventHarvesting = config.getBoolean("villager-settings.prevent-villagers-harvesting-farms", true);
+        this.preventTrampling = config.getBoolean("villager-settings.prevent-villagers-trampling-farmland", false);
+    }
 
-	@EventHandler(priority = EventPriority.HIGHEST)
-	private void onEntityChangeBlock(EntityChangeBlockEvent event) {
+    private boolean isCropBlock(Material mat) {
+        return Tag.CROPS.isTagged(mat);
+    }
 
-		if (config.getStringList("settings.disabled-worlds").contains(event.getEntity().getWorld().getName())) return;
-
-		if (event.isCancelled()) return;
-		if (!event.getEntity().getType().equals(EntityType.VILLAGER)) return;
-		if (!config.getBoolean("villager-settings.prevent-villagers-harvesting-farms", true)) return;
-
-		event.setCancelled(true);
-
-	}
-
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onEntityChangeBlock(EntityChangeBlockEvent event) {
+        if (!preventHarvesting && !preventTrampling) return;
+        if (event.getEntityType() != EntityType.VILLAGER) return;
+        Material from = event.getBlock().getType();
+        boolean isCropAction = isCropBlock(from);
+        boolean isTrampling = from == Material.FARMLAND;
+        if (isCropAction && !preventHarvesting) return;
+        if (isTrampling && !preventTrampling) return;
+        if (!isCropAction && !isTrampling) return;
+        if (disabledWorlds.contains(event.getEntity().getWorld().getName())) return;
+        event.setCancelled(true);
+    }
 }

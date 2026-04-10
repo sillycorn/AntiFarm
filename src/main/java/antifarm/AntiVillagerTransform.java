@@ -1,56 +1,67 @@
 package antifarm;
 
-import java.util.Random;
-
+import configuration.Configuration;
+import core.AntiFarmPlugin;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityTransformEvent;
 import org.bukkit.event.entity.EntityTransformEvent.TransformReason;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 
-import configuration.Configuration;
-import core.AntiFarmPlugin;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class AntiVillagerTransform implements Listener {
+    private final AntiFarmPlugin plugin;
+    private Set<String> disabledWorlds;
+    private boolean preventCureEnable;
+    private int curePercent;
+    private int infectionPercent;
 
-	private final Configuration config;
-	Random random = new Random();
+    public AntiVillagerTransform(AntiFarmPlugin plugin) {
+        this.plugin = plugin;
+        reloadConf();
+    }
 
-	public AntiVillagerTransform(AntiFarmPlugin plugin) {
-		this.config = plugin.getConfig();
-	}
+    public void reloadConf() {
+        Configuration config = plugin.getConfig();
+        this.disabledWorlds = new HashSet<>(config.getStringList("settings.disabled-worlds"));
+        this.preventCureEnable = config.getBoolean("villager-settings.prevent-zombie-villagers-cure.enable", true);
+        this.curePercent = config.getInt("villager-settings.prevent-zombie-villagers-cure.cure-percent", 0);
+        this.infectionPercent = config.getInt("villager-settings.prevent-villagers-infection.infection-percent", 30);
+    }
 
-	@EventHandler(priority = EventPriority.HIGHEST)
-	private void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
+    private boolean isGoldenApple(ItemStack item) {
+        Material m = item.getType();
+        return m == Material.GOLDEN_APPLE || m == Material.ENCHANTED_GOLDEN_APPLE;
+    }
 
-		if (config.getStringList("settings.disabled-worlds").contains(event.getPlayer().getWorld().getName())) return;
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
+        if (!preventCureEnable || curePercent != 0) return;
+        if (event.getRightClicked().getType() != EntityType.ZOMBIE_VILLAGER) return;
+        PlayerInventory inv = event.getPlayer().getInventory();
+        if (!isGoldenApple(inv.getItemInMainHand()) && !isGoldenApple(inv.getItemInOffHand())) return;
+        if (disabledWorlds.contains(event.getPlayer().getWorld().getName())) return;
+        event.setCancelled(true);
+    }
 
-		if (event.isCancelled() || event.getPlayer() == null || event.getRightClicked() == null || event.getPlayer().getInventory().getItemInMainHand() == null || event.getPlayer().getInventory().getItemInOffHand() == null) return;
-		if (!event.getRightClicked().getType().equals(EntityType.ZOMBIE_VILLAGER)) return;
-		if (!event.getPlayer().getInventory().getItemInMainHand().getType().equals(Material.GOLDEN_APPLE) && !event.getPlayer().getInventory().getItemInOffHand().getType().equals(Material.GOLDEN_APPLE) && !event.getPlayer().getInventory().getItemInMainHand().getType().equals(Material.ENCHANTED_GOLDEN_APPLE) && !event.getPlayer().getInventory().getItemInOffHand().getType().equals(Material.ENCHANTED_GOLDEN_APPLE)) return;
-		if (!config.getBoolean("villager-settings.prevent-zombie-villagers-cure.enable", true)) return;
-		if (config.getInt("villager-settings.prevent-zombie-villagers-cure.cure-percent", 0) != 0) return;
-
-		event.setCancelled(true);
-
-	}
-
-	@EventHandler
-	private void onEntityTransform(EntityTransformEvent event) {
-
-		if (config.getStringList("settings.disabled-worlds").contains(event.getEntity().getWorld().getName())) return;
-
-		if (event.getEntity() == null || event.getTransformReason() == null || !event.getEntityType().equals(EntityType.VILLAGER) && !event.getEntityType().equals(EntityType.ZOMBIE_VILLAGER)) return;
-		if (event.getEntity().getType().equals(EntityType.VILLAGER) && event.getTransformReason().equals(TransformReason.INFECTION) && random.nextInt(100) < config.getInt("villager-settings.prevent-villagers-infection.infection-percent", 30)) return;
-		if (event.getEntity().getType().equals(EntityType.ZOMBIE_VILLAGER) && event.getTransformReason().equals(TransformReason.CURED) && random.nextInt(100) < config.getInt("villager-settings.prevent-zombie-villagers-cure.cure-percent", 30)) return;
-
-		LivingEntity transformedEntity = (LivingEntity) event.getTransformedEntity();
-		transformedEntity.setHealth(0);
-
-	}
-
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onEntityTransform(EntityTransformEvent event) {
+        EntityType type = event.getEntityType();
+        TransformReason reason = event.getTransformReason();
+        boolean isInfection = type == EntityType.VILLAGER && reason == TransformReason.INFECTION;
+        boolean isCure = type == EntityType.ZOMBIE_VILLAGER && reason == TransformReason.CURED;
+        if (!isInfection && !isCure) return;
+        if (disabledWorlds.contains(event.getEntity().getWorld().getName())) return;
+        int percent = isInfection ? infectionPercent : curePercent;
+        if (ThreadLocalRandom.current().nextInt(100) < percent) return;
+        event.setCancelled(true);
+    }
 }

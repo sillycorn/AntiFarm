@@ -20,6 +20,13 @@ public class AntiFarmPlugin extends JavaPlugin implements Listener {
     private AntiGrowth antiGrowth;
     private AntiSnowballFarm antiSnowballFarm;
     private AntiArmadilloFarm antiArmadilloFarm;
+    private AntiVillagerTransform antiVillagerTransform;
+    private AntiVillagerBreed antiVillagerBreed;
+    private AntiVillagerFarm antiVillagerFarm;
+    private AntiVillagerCareer antiVillagerCareer;
+    private AntiVillagerTarget antiVillagerTarget;
+    private AntiVillagerTrade antiVillagerTrade;
+    private AntiVillageGuard antiVillageGuard;
 
     @Override
     public void onEnable() {
@@ -32,18 +39,26 @@ public class AntiFarmPlugin extends JavaPlugin implements Listener {
         antiBarteringFarm = new AntiBarteringFarm(this);
         antiGrowth = new AntiGrowth(this);
         antiSnowballFarm = new AntiSnowballFarm(this);
-        registerEvents(this, new AntiPistonFarm(this), new AntiVillagerFarm(this), new AntiWaterFarm(this), antiCactusFarm,
-                new AntiEndermanFarm(this), new AntiVillagerBreed(this), new AntiMobFarm(this),
+        antiVillageGuard = new AntiVillageGuard(this);
+        antiVillagerBreed = new AntiVillagerBreed(this);
+        antiVillagerFarm = new AntiVillagerFarm(this);
+        antiVillagerCareer = new AntiVillagerCareer(this);
+        antiVillagerTarget = new AntiVillagerTarget(this);
+        antiVillagerTrade = new AntiVillagerTrade(this);
+        antiVillagerTransform = new AntiVillagerTransform(this);
+
+        registerEvents(this, new AntiPistonFarm(this), antiVillagerFarm, new AntiWaterFarm(this), antiCactusFarm,
+                new AntiEndermanFarm(this), antiVillagerBreed, new AntiMobFarm(this),
                 antiDispenser, antiFishFarm, new AntiMobSpawner(this),
-                new AntiVillagerTransform(this), new AntiVillagerTarget(this), new AntiVillageGuard(this), antiSnowballFarm,
-                new AntiRaidFarm(this), new AntiBerryFarm(this), new AntiZeroTickFarm(this), antiGrowth,
-                new AntiFroglightFarm(this), new AntiVillagerCareer(this), new AntiVillagerTrade(this),
+                antiVillagerTransform, antiVillagerTarget, antiVillageGuard, antiSnowballFarm,
+                new AntiRaidFarm(this), new AntiBerryFarm(this), antiGrowth,
+                new AntiFroglightFarm(this), antiVillagerCareer, antiVillagerTrade,
                 new AntiChickenEggFarm(this), new AntiCowMilk(this), new AntiLavaFarm(this), antiBarteringFarm);
             if (armadillocheck()) {
                 antiArmadilloFarm = new AntiArmadilloFarm(this);
                 Bukkit.getPluginManager().registerEvents(antiArmadilloFarm, this);
             }
-
+        getCommand("antifarmreloaded").setExecutor(new Commands(this));
         getCommand("antifarm").setExecutor(new Commands(this));
     }
 
@@ -73,6 +88,13 @@ public class AntiFarmPlugin extends JavaPlugin implements Listener {
         antiBarteringFarm.reloadConf();
         antiGrowth.reloadConf();
         antiSnowballFarm.reloadConf();
+        antiVillagerBreed.reloadConf();
+        antiVillagerFarm.reloadConf();
+        antiVillagerCareer.reloadConf();
+        antiVillagerTarget.reloadConf();
+        antiVillagerTrade.reloadConf();
+        antiVillagerTransform.reloadConf();
+        antiVillageGuard.reloadConf();
         if (antiArmadilloFarm != null) {
             antiArmadilloFarm.reloadConf();
         }

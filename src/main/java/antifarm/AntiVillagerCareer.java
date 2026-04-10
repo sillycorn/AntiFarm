@@ -1,5 +1,7 @@
 package antifarm;
 
+import configuration.Configuration;
+import core.AntiFarmPlugin;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -7,29 +9,31 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.VillagerCareerChangeEvent;
 import org.bukkit.event.entity.VillagerCareerChangeEvent.ChangeReason;
 
-import configuration.Configuration;
-import core.AntiFarmPlugin;
+import java.util.HashSet;
+import java.util.Set;
 
 public class AntiVillagerCareer implements Listener {
+    private final AntiFarmPlugin plugin;
+    private Set<String> disabledWorlds;
+    private boolean preventProfessionChange;
 
-	private final Configuration config;
+    public AntiVillagerCareer(AntiFarmPlugin plugin) {
+        this.plugin = plugin;
+        reloadConf();
+    }
 
-	public AntiVillagerCareer(AntiFarmPlugin plugin) {
-		this.config = plugin.getConfig();
-	}
+    public void reloadConf() {
+        Configuration config = plugin.getConfig();
+        this.disabledWorlds = new HashSet<>(config.getStringList("settings.disabled-worlds"));
+        this.preventProfessionChange = config.getBoolean("villager-settings.prevent-villagers-profession-change", true);
+    }
 
-	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onVillagerCareerChange(VillagerCareerChangeEvent event) {
-
-		if (config.getStringList("settings.disabled-worlds").contains(event.getEntity().getWorld().getName())) return;
-
-		if (event.isCancelled() || event.getEntity() == null || event.getReason() == null) return;
-		if (!event.getReason().equals(ChangeReason.EMPLOYED)) return;
-		if (!config.getBoolean("villager-settings.prevent-villagers-profession-change", true)) return;
-
-		Villager villager = event.getEntity();
-		villager.setVillagerExperience(villager.getVillagerExperience() + 1);
-
-	}
-
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onVillagerCareerChange(VillagerCareerChangeEvent event) {
+        if (!preventProfessionChange) return;
+        if (event.getReason() != ChangeReason.EMPLOYED) return;
+        if (disabledWorlds.contains(event.getEntity().getWorld().getName())) return;
+        Villager villager = event.getEntity();
+        villager.setVillagerExperience(villager.getVillagerExperience() + 1);
+    }
 }

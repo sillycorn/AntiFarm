@@ -1,100 +1,78 @@
 package antifarm;
 
+import configuration.Configuration;
+import core.AntiFarmPlugin;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
-import org.bukkit.event.entity.EntityBreedEvent;
-import org.bukkit.event.entity.EntityDropItemEvent;
-import org.bukkit.event.entity.EntityEnterLoveModeEvent;
-import org.bukkit.event.entity.EntityPickupItemEvent;
 
-import configuration.Configuration;
-import core.AntiFarmPlugin;
+import java.util.HashSet;
+import java.util.Set;
 
 public class AntiVillagerBreed implements Listener {
+    private final AntiFarmPlugin plugin;
+    private Set<String> disabledWorlds;
+    private boolean preventVillagersBreed;
 
-	private final Configuration config;
+    public AntiVillagerBreed(AntiFarmPlugin plugin) {
+        this.plugin = plugin;
+        reloadConf();
+    }
 
-	public AntiVillagerBreed(AntiFarmPlugin plugin) {
-		this.config = plugin.getConfig();
-	}
+    public void reloadConf() {
+        Configuration config = plugin.getConfig();
+        this.disabledWorlds = new HashSet<>(config.getStringList("settings.disabled-worlds"));
+        this.preventVillagersBreed = config.getBoolean("villager-settings.prevent-villagers-breed", true);
+    }
 
-	@EventHandler(priority = EventPriority.HIGHEST)
-	private void onVillagerPickup(EntityPickupItemEvent event) {
+    private boolean isBlockedWorld(org.bukkit.entity.Entity entity) {
+        return disabledWorlds.contains(entity.getWorld().getName());
+    }
 
-		if (config.getStringList("settings.disabled-worlds").contains(event.getEntity().getWorld().getName())) return;
+    private void resetBreed(org.bukkit.entity.Entity entity) {
+        if (!(entity instanceof Villager villager)) return;
+        if (isBlockedWorld(entity)) return;
+        villager.setBreed(false);
+    }
 
-		if (event.isCancelled() || event.getEntity() == null) return;
-		if (!event.getEntity().getType().equals(EntityType.VILLAGER)) return;
-		if (!config.getBoolean("villager-settings.prevent-villagers-breed", true)) return;
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onVillagerPickup(EntityPickupItemEvent event) {
+        if (!preventVillagersBreed) return;
+        resetBreed(event.getEntity());
+    }
 
-		Villager villager = (Villager) event.getEntity();
-		villager.setBreed(false);
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onVillagerDrop(EntityDropItemEvent event) {
+        if (!preventVillagersBreed) return;
+        resetBreed(event.getEntity());
+    }
 
-	}
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onVillagerBreed(EntityBreedEvent event) {
+        if (!preventVillagersBreed) return;
+        if (!(event.getEntity() instanceof Villager)) return;
+        if (isBlockedWorld(event.getEntity())) return;
+        event.setCancelled(true);
+        ((Villager) event.getMother()).setBreed(false);
+        ((Villager) event.getFather()).setBreed(false);
+    }
 
-	@EventHandler(priority = EventPriority.HIGHEST)
-	private void onVillagerDrop(EntityDropItemEvent event) {
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onVillagerSpawn(CreatureSpawnEvent event) {
+        if (!preventVillagersBreed) return;
+        if (event.getSpawnReason() != SpawnReason.BREEDING) return;
+        if (event.getEntityType() != EntityType.VILLAGER) return;
+        if (isBlockedWorld(event.getEntity())) return;
+        event.setCancelled(true);
+    }
 
-		if (config.getStringList("settings.disabled-worlds").contains(event.getEntity().getWorld().getName())) return;
-
-		if (event.isCancelled() || event.getEntity() == null) return;
-		if (!event.getEntity().getType().equals(EntityType.VILLAGER)) return;
-		if (!config.getBoolean("villager-settings.prevent-villagers-breed", true)) return;
-
-		Villager villager = (Villager) event.getEntity();
-		villager.setBreed(false);
-
-	}
-
-	@EventHandler(priority = EventPriority.HIGHEST)
-	private void onVillagerBreed(EntityBreedEvent event) {
-
-		if (config.getStringList("settings.disabled-worlds").contains(event.getEntity().getWorld().getName())) return;
-
-		if (event.isCancelled() || event.getEntity() == null) return;
-		if (!event.getEntity().getType().equals(EntityType.VILLAGER)) return;
-		if (event.getMother() == null || event.getFather() == null) return;
-		if (!config.getBoolean("villager-settings.prevent-villagers-breed", true)) return;
-
-		event.setCancelled(true);
-
-		Villager mother = (Villager) event.getMother();
-		Villager father = (Villager) event.getFather();
-
-		mother.setBreed(false);
-		father.setBreed(false);
-
-	}
-
-	@EventHandler(priority = EventPriority.HIGHEST)
-	private void onVillagerSpawn(CreatureSpawnEvent event) {
-
-		if (config.getStringList("settings.disabled-worlds").contains(event.getEntity().getWorld().getName())) return;
-
-		if (event.isCancelled() || event.getEntity() == null) return;
-		if (!event.getEntity().getType().equals(EntityType.VILLAGER)) return;
-		if (!event.getSpawnReason().equals(SpawnReason.BREEDING)) return;
-		if (!config.getBoolean("villager-settings.prevent-villagers-breed", true)) return;
-
-		event.setCancelled(true);
-
-	}
-
-	@EventHandler(priority = EventPriority.HIGHEST)
-	private void onEntityEnterLoveMode(EntityEnterLoveModeEvent event) {
-
-		if (config.getStringList("settings.disabled-worlds").contains(event.getEntity().getWorld().getName())) return;
-
-		if (event.isCancelled() || event.getEntity() == null || !config.getBoolean("villager-settings.prevent-villagers-breed", true) || !event.getEntity().getType().equals(EntityType.VILLAGER)) return;
-
-		Villager villager = (Villager) event.getEntity();
-		villager.setBreed(false);
-
-	}
-
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onEntityEnterLoveMode(EntityEnterLoveModeEvent event) {
+        if (!preventVillagersBreed) return;
+        resetBreed(event.getEntity());
+    }
 }

@@ -1,53 +1,55 @@
 package antifarm;
 
+import configuration.Configuration;
+import core.AntiFarmPlugin;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockFromToEvent;
-import org.bukkit.event.player.PlayerBucketEmptyEvent;
 
-import configuration.Configuration;
-import core.AntiFarmPlugin;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
 
 public class AntiWaterFarm implements Listener {
+    private final AntiFarmPlugin plugin;
+    private boolean preventWaterHarvesting;
+    private boolean breakBlocks;
+    private Set<String> disabledWorlds;
+    private Set<Material> farmBlocks;
 
-	private final Configuration config;
+    public AntiWaterFarm(AntiFarmPlugin plugin) {
+        this.plugin = plugin;
+        reloadConf();
+    }
 
-	public AntiWaterFarm(AntiFarmPlugin plugin) {
-		this.config = plugin.getConfig();
-	}
+    public void reloadConf() {
+        Configuration config = plugin.getConfig();
+        this.preventWaterHarvesting = config.getBoolean("farms-settings.prevent-water-harvesting-farms", true);
+        this.breakBlocks = config.getBoolean("settings.break-blocks", true);
+        this.disabledWorlds = new HashSet<>(config.getStringList("settings.disabled-worlds"));
+        this.farmBlocks = EnumSet.noneOf(Material.class);
+        for (String matStr : config.getStringList("farm-blocks")) {
+            try {
+                this.farmBlocks.add(Material.valueOf(matStr.toUpperCase()));
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+    }
 
-	@EventHandler(priority = EventPriority.HIGHEST)
-	private void onBlockFromTo(BlockFromToEvent event) {
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onBlockFromTo(BlockFromToEvent event) {
+        if (!preventWaterHarvesting) return;
+        if (event.getBlock().getType() != Material.WATER) return;
 
-		if (config.getStringList("settings.disabled-worlds").contains(event.getBlock().getWorld().getName())) return;
-
-		if (event.getBlock() == null || event.getToBlock() == null || event.getFace() == null) return;
-		if (!event.getBlock().getType().equals(Material.WATER)) return;
-		if (!config.getBoolean("farms-settings.prevent-water-harvesting-farms", true)) return;
-		if (!config.getStringList("farm-blocks").contains(event.getBlock().getRelative(event.getBlock().getFace(event.getToBlock())).getType().toString().toUpperCase())) return;
-
-		event.setCancelled(true);
-
-		if (!config.getBoolean("settings.break-blocks", true)) return;
-
-		event.getBlock().getRelative(event.getBlock().getFace(event.getToBlock())).setType(Material.AIR);
-
-	}
-
-	@EventHandler(priority = EventPriority.HIGHEST)
-	private void onPlayerBucketEmpty(PlayerBucketEmptyEvent event) {
-
-		if (config.getStringList("settings.disabled-worlds").contains(event.getBlock().getWorld().getName())) return;
-
-		if (event.getPlayer() == null || event.getBlock() == null || event.getBlockClicked() == null || event.getBlockFace() == null || event.getBucket() == null) return;
-		if (!event.getBucket().equals(Material.WATER_BUCKET)) return;
-		if (!config.getBoolean("farms-settings.prevent-water-harvesting-farms", true)) return;
-		if (!config.getStringList("farm-blocks").contains(event.getBlockClicked().getRelative(event.getBlockFace()).getType().toString().toUpperCase())) return;
-
-		event.setCancelled(true);
-
-	}
-
+        Block toBlock = event.getToBlock();
+        if (!farmBlocks.contains(toBlock.getType())) return;
+        if (!disabledWorlds.isEmpty() && disabledWorlds.contains(toBlock.getWorld().getName())) return;
+        event.setCancelled(true);
+        if (breakBlocks) {
+            toBlock.setType(Material.AIR);
+        }
+    }
 }

@@ -28,6 +28,9 @@ public class AntiFarmPlugin extends JavaPlugin implements Listener {
     private AntiVillagerTrade antiVillagerTrade;
     private AntiVillageGuard antiVillageGuard;
     private AntiMobFarm antiMobFarm;
+    private AntiBerryFarm antiBerryFarm;
+    private AntiLavaFarm antiLavaFarm;
+    private AntiWaterFarm antiWaterFarm;
 
     @Override
     public void onEnable() {
@@ -48,14 +51,17 @@ public class AntiFarmPlugin extends JavaPlugin implements Listener {
         antiVillagerTrade = new AntiVillagerTrade(this);
         antiVillagerTransform = new AntiVillagerTransform(this);
         antiMobFarm = new AntiMobFarm(this);
+        antiLavaFarm = new AntiLavaFarm(this);
+        antiBerryFarm = new AntiBerryFarm(this);
+        antiWaterFarm = new AntiWaterFarm(this);
 
-        registerEvents(this, new AntiPistonFarm(this), antiVillagerFarm, new AntiWaterFarm(this), antiCactusFarm,
+        registerEvents(this, new AntiPistonFarm(this), antiVillagerFarm, antiWaterFarm, antiCactusFarm,
                 new AntiEndermanFarm(this), antiVillagerBreed, antiMobFarm,
                 antiDispenser, antiFishFarm, new AntiMobSpawner(this),
                 antiVillagerTransform, antiVillagerTarget, antiVillageGuard, antiSnowballFarm,
-                new AntiRaidFarm(this), new AntiBerryFarm(this), antiGrowth,
+                new AntiRaidFarm(this), antiBerryFarm, antiGrowth,
                 new AntiFroglightFarm(this), antiVillagerCareer, antiVillagerTrade,
-                new AntiChickenEggFarm(this), new AntiCowMilk(this), new AntiLavaFarm(this), antiBarteringFarm);
+                new AntiChickenEggFarm(this), new AntiCowMilk(this), antiLavaFarm, antiBarteringFarm);
             if (armadillocheck()) {
                 antiArmadilloFarm = new AntiArmadilloFarm(this);
                 Bukkit.getPluginManager().registerEvents(antiArmadilloFarm, this);
@@ -98,6 +104,10 @@ public class AntiFarmPlugin extends JavaPlugin implements Listener {
         antiVillagerTransform.reloadConf();
         antiVillageGuard.reloadConf();
         antiMobFarm.reloadConf();
+        antiLavaFarm.reloadConf();
+        antiBerryFarm.reloadConf();
+        antiWaterFarm.reloadConf();
+        
         if (antiArmadilloFarm != null) {
             antiArmadilloFarm.reloadConf();
         }

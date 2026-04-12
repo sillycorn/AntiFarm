@@ -52,7 +52,7 @@ Server owners have **full control** via the configuration file, allowing you to 
 
 ## Installation
 
-1. Download the latest `.jar` file from the [Releases](../../releases/latest) page.
+1. Download the latest `.jar` file from the [Modrinth](https://modrinth.com/plugin/antifarmreloaded) or the [Releases](../../releases/latest) page.
 2. Drop the `.jar` into your Minecraft server's `plugins/` folder.
 3. Restart your server.
 4. Open `plugins/AntiFarmReloaded/config.yml` to customize your settings!

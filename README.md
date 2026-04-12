@@ -23,6 +23,7 @@ Server owners have **full control** via the configuration file, allowing you to 
 * **Cactus & Bamboo:** Block cactus farms by preventing growth next to adjacent blocks.
 * **Piston Farms:** Stop pistons from automatically breaking or moving farm blocks.
 * **Water Harvesting:** Prevent water from automatically breaking and collecting crops.
+* **Unlit Harvesting:** Prevent instant crop harvesting in insufficiently lit areas.
 * **Growth Control:** Prevent the automatic growth of configurable blocks (cactus, bamboo, kelp, dripstone, etc.).
 * **Infinite Lava:** Block infinite lava generation via pointed dripstone.
 

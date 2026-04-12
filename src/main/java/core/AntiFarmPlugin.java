@@ -117,8 +117,8 @@ public class AntiFarmPlugin extends JavaPlugin implements Listener {
         if (antiArmadilloFarm != null) {
             antiArmadilloFarm.reloadConf();
         }
-        if (antiUnlitCropBreaking != null) {
-            antiUnlitCropBreaking.reloadConf();
+        if (antiUnlitCropBreak != null) {
+            antiUnlitCropBreak.reloadConf();
         }
     }
 

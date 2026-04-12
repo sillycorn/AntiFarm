@@ -31,6 +31,7 @@ public class AntiFarmPlugin extends JavaPlugin implements Listener {
     private AntiBerryFarm antiBerryFarm;
     private AntiLavaFarm antiLavaFarm;
     private AntiWaterFarm antiWaterFarm;
+    private AntiUnlitCropBreak antiUnlitCropBreak;
 
     @Override
     public void onEnable() {
@@ -65,6 +66,11 @@ public class AntiFarmPlugin extends JavaPlugin implements Listener {
             if (armadillocheck()) {
                 antiArmadilloFarm = new AntiArmadilloFarm(this);
                 Bukkit.getPluginManager().registerEvents(antiArmadilloFarm, this);
+            }
+            if (isPaperServer()) {
+                antiUnlitCropBreak = new AntiUnlitCropBreak(this);
+                Bukkit.getPluginManager().registerEvents(antiUnlitCropBreak, this);
+                getLogger().info("Enabled paper-only antifarm protections");
             }
         getCommand("antifarmreloaded").setExecutor(new Commands(this));
         getCommand("antifarm").setExecutor(new Commands(this));
@@ -111,6 +117,9 @@ public class AntiFarmPlugin extends JavaPlugin implements Listener {
         if (antiArmadilloFarm != null) {
             antiArmadilloFarm.reloadConf();
         }
+        if (antiUnlitCropBreaking != null) {
+            antiUnlitCropBreaking.reloadConf();
+        }
     }
 
     private boolean armadillocheck() {
@@ -118,6 +127,14 @@ public class AntiFarmPlugin extends JavaPlugin implements Listener {
             EntityType.valueOf("ARMADILLO");
             return true;
         } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+    private boolean isPaperServer() {
+        try {
+            Class.forName("io.papermc.paper.ServerBuildInfo");
+            return true;
+        } catch (ClassNotFoundException e) {
             return false;
         }
     }

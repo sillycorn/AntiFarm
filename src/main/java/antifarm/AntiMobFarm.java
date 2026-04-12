@@ -31,15 +31,12 @@ public class AntiMobFarm implements Listener {
     );
 
     static {
-        Attribute maxhealth;
-        try {
-            maxhealth = Attribute.valueOf("MAX_HEALTH");
-        } catch (IllegalArgumentException e) {
-            try {
-                maxhealth = Attribute.valueOf("GENERIC_MAX_HEALTH");
-            } catch (IllegalArgumentException e2) {
-                maxhealth = null;
-            }
+        Attribute maxhealth = null;
+        if (maxhealth == null) {
+            maxhealth = Registry.ATTRIBUTE.get(NamespacedKey.minecraft("max_health"));
+        }
+        if (maxhealth == null) {
+            maxhealth = Registry.ATTRIBUTE.get(NamespacedKey.minecraft("generic.max_health"));
         }
         maxmobHealth = maxhealth;
     }

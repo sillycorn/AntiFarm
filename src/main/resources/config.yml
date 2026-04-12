@@ -102,6 +102,21 @@ farms-settings:
    # Prevents infinity lava with dripstone.
    prevent-infinity-lava: true
 
+crop-farms:
+   no-light-break:
+      enabled: true
+      no-light-break-crops:
+         - WHEAT
+         - CARROTS
+         - POTATOES
+         - BEETROOTS
+         - MELON_STEM
+         - PUMPKIN_STEM
+         - ATTACHED_MELON_STEM
+         - ATTACHED_PUMPKIN_STEM
+         - TORCHFLOWER_CROP
+         - PITCHER_CROP
+
 # prevent dispensers and droppers from dropping gold ingot in nether
 prevent-bartering-farm:
    enable: true

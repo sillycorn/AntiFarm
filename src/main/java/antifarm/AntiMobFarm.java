@@ -3,6 +3,7 @@ package antifarm;
 import configuration.Configuration;
 import core.AntiFarmPlugin;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.enchantments.Enchantment;
